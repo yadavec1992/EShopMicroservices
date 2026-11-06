@@ -1,0 +1,23 @@
+services:
+  catalog.api:
+    build:
+      context: .
+      dockerfile: src/Services/Catalog/CatalogAPI/Dockerfile
+    environment:
+      ConnectionStrings__Database: "Host=catalogdb;Port=5432;Database=catalogDb;Username=postgres;Password=postgres;Include Error Detail=true"
+    depends_on:
+      - catalogdb
+
+  catalogdb:
+    image: postgres
+    environment:
+      POSTGRES_DB: catalogDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_catalog:/var/lib/postgresql/data
+
+volumes:
+  postgres_catalog:

@@ -1,0 +1,16 @@
+services:
+  catalog.api:
+    ports:
+      - "8080:8080"
+
+  catalogdb:
+    container_name: catalogdb
+    environment:
+      POSTGRES_DB: catalogDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_catalog:/var/lib/postgresql/data

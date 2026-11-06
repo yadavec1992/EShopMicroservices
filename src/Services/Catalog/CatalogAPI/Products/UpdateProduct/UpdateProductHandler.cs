@@ -1,0 +1,44 @@
+﻿namespace Catalog.API.Products.UpdateProduct
+{
+    public record UpdatateProductCommand(Guid Id, string Name, List<string> Category, string Description, string ImageFile, decimal Price) : ICommand<UpdateProductResult>;
+    public record UpdateProductResult(bool IsSuccess);
+
+    public class UpdateProductCommandValidator : AbstractValidator<UpdatateProductCommand>
+    {
+        public UpdateProductCommandValidator()
+        {
+
+            RuleFor(command => command.Id).NotEmpty().WithMessage("Product Id is required");
+
+            RuleFor(command => command.Name).NotEmpty().WithMessage("Name is Required")
+                .Length(2, 150).WithMessage("Name must be between 2 and 150 characters");
+            RuleFor(command => command.Price)
+                .GreaterThan(0).WithMessage("Price Must be greater than 0");
+;        }
+    }
+    internal class UpdateProductCommandHandler(IDocumentSession session,ILogger<UpdateProductCommandHandler> logger)
+        : ICommandHandler<UpdatateProductCommand, UpdateProductResult>
+    {
+        public async Task<UpdateProductResult> Handle(UpdatateProductCommand command, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("UpdateProductCommandHandler.Handle called with {@Query}", command);
+
+            var product = await session.LoadAsync<Product>(command.Id, cancellationToken);
+            if(product is null)
+            {
+                throw new ProductNotFoundException();
+            }
+
+            product.Name = command.Name;
+            product.Category = command.Category;
+            product.Description = command.Description;
+            product.ImageFile = command.ImageFile;
+            product.Price = command.Price;
+
+            session.Update(product);
+            await session.SaveChangesAsync(cancellationToken);
+
+            return new UpdateProductResult(true);
+        }
+    }
+}
