@@ -1,19 +1,16 @@
-﻿namespace Catalog.API.Products.GetProductByCategory
+﻿using JasperFx.Events.Daemon;
+
+namespace Catalog.API.Products.GetProductByCategory
 {
     public record GetProductByCategoryQuery(string Category) : IQuery<GetProductByCategoryResult>;
     public record GetProductByCategoryResult(IEnumerable<Product> Products);
-    internal class GetProductByCategoryQueryHandler(IDocumentSession session, ILogger<GetProductByCategoryQueryHandler> logger)
+    internal class GetProductByCategoryQueryHandler(IDocumentSession session)
         : IQueryHandler<GetProductByCategoryQuery, GetProductByCategoryResult>
     {
         public async Task<GetProductByCategoryResult> Handle(GetProductByCategoryQuery query, CancellationToken cancellationToken)
         {
-            logger.LogInformation("GetProductByCategoryQueryHandler.Handle called with {@Query}", query);
 
             var result = await session.Query<Product>().Where(p => p.Category.Contains(query.Category)).ToListAsync(cancellationToken);
-            if (result is null || !result.Any())
-            {
-                throw new ProductNotFoundException();
-            }
 
             return new GetProductByCategoryResult(result);
         }

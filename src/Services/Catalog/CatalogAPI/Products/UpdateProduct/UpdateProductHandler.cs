@@ -16,17 +16,16 @@
                 .GreaterThan(0).WithMessage("Price Must be greater than 0");
 ;        }
     }
-    internal class UpdateProductCommandHandler(IDocumentSession session,ILogger<UpdateProductCommandHandler> logger)
+    internal class UpdateProductCommandHandler(IDocumentSession session)
         : ICommandHandler<UpdatateProductCommand, UpdateProductResult>
     {
         public async Task<UpdateProductResult> Handle(UpdatateProductCommand command, CancellationToken cancellationToken)
         {
-            logger.LogInformation("UpdateProductCommandHandler.Handle called with {@Query}", command);
 
             var product = await session.LoadAsync<Product>(command.Id, cancellationToken);
             if(product is null)
             {
-                throw new ProductNotFoundException();
+                throw new ProductNotFoundException(command.Id);
             }
 
             product.Name = command.Name;
